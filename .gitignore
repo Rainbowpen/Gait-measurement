@@ -1,0 +1,15 @@
+# This is gitignore file.
+
+# ignore
+
+blue_point_model/
+env-tensorflow_cpu1/
+env-tensorflow_gpu2/
+models/
+my/
+new_detect.tflite
+__pycache__/
+tensorflow/
+test_video/
+tf_detection_model_zoo/
+
