@@ -1,4 +1,5 @@
 # Gait-measurement
+![preview](preview.jpg)
 
 ## Gait measurement with google tensorflow & tensorflow object detection api
 
