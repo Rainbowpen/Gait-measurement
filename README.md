@@ -1,8 +1,10 @@
 # Gait-measurement
+## Gait measurement with google tensorflow & tensorflow object detection api
+
 ![preview](preview.jpg)
+
 ![track](track.png)
 
-## Gait measurement with google tensorflow & tensorflow object detection api
 
 ### How to train new object detection model
 1. use labelimg 
