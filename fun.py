@@ -33,13 +33,14 @@ tf.gfile = tf.io.gfile
 class config:
 
 	#PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/models/research/object_detection/data/mscoco_label_map.pbtxt''
-	PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/my/my_label_map.pbtxt'
-	TEST_VIDEO_PATH = './test_video/foot_14.mp4'
+	PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/my_label_map.pbtxt'
+	VIDEO_NUMBER = '19'
+	TEST_VIDEO_PATH = './test_video/foot_' + VIDEO_NUMBER + '.mp4'
 	CAMERA = 0
 	URL = 'http://localhost:8081'
 	#MODEL_NAME = 'ssdlite_mobilenet_v2_coco_2018_05_09'#
 	MODEL_NAME = 'blue_point'
-	VIDEO_SAVE_PATH = '/home/simon/Videos/video_output_14.mp4'
+	VIDEO_SAVE_PATH = '/home/simon/Videos/video_output_' + VIDEO_NUMBER + '.mp4'
 	RULER = 0.45
 	CM = 40
 
