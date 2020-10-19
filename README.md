@@ -30,8 +30,8 @@ $ python export_inference_graph.py --input_type image_tensor --pipeline_config_p
 7. convert to tflite(option)
 
 8. run it
-```python
-python blue_point_video.py
+```bash
+$ python blue_point_video.py
 ```
 
 #### Output
