@@ -9,6 +9,7 @@ import cv2
 import time
 import copy
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
 from scipy.signal import find_peaks
 
 captype = 'video' # camera, video or stream
@@ -135,52 +136,7 @@ def main():
 	rfoot_min = min(rfoot_data_ymax)
 	lfoot_avg = (lfoot_max - lfoot_min)/2 + lfoot_min
 	rfoot_avg = (rfoot_max - rfoot_min)/2 + rfoot_min
-	'''
-	def get_step(data_top_x, data_ymax, foot_avg):
-	# return step list
-		f_box_x = []
-		f_box_y = []
-		max_box_x = []
-		max_box_y = []
-		min_box_x = []
-		min_box_y = []
-		status = ''
-		for i in range(0, len(data_ymax)):
-			if i == 0:
-				continue
-			if data_ymax[i] >= foot_avg:
-				if status == '':
-					status = 'up'
-				elif status == 'down' and data_ymax[i] >= foot_avg + 0.1:
-					status = 'up'
-				if min_box_y != []:
-					if status == 'up':
-						f_box_y.append(min(min_box_y))
-						f_box_x.append(min_box_x[min_box_y.index(min(min_box_y))])
-					min_box_x = []
-					min_box_y = []
-				max_box_x.append(data_top_x[i])
-				max_box_y.append(data_ymax[i])
-			if data_ymax[i] < foot_avg:
-				if status == '':
-					status = 'down'
-				elif status == 'up' and data_ymax[i] <= foot_avg - 0.1:
-					status = 'down'
-				if max_box_y != []:
-					if status == 'down':
-						f_box_y.append(max(max_box_y))
-						f_box_x.append(max_box_x[max_box_y.index(max(max_box_y))])
-					max_box_x = []
-					max_box_y = []
-				min_box_x.append(data_top_x[i])
-				min_box_y.append(data_ymax[i])
-		return f_box_x, f_box_y
-'''
-	#lfoot_step_x, lfoot_step_y = get_step(lfoot_data_top_x, lfoot_data_ymax, lfoot_avg)
-	#rfoot_step_x, rfoot_step_y = get_step(rfoot_data_top_x, rfoot_data_ymax, rfoot_avg)
-	#print(len(lfoot_step_x))
-	#print(len(lfoot_step_y))
-	#print(lfoot_data_ymax)
+
 
 	def convert_list_to_negative(data):
 		new_data = []
@@ -197,6 +153,7 @@ def main():
 			foot_step_y.append(y[i])
 		return foot_step_x, foot_step_y
 		
+
 	lfoot_step_y_index = find_peaks(lfoot_data_ymax, prominence=0.1)[0]
 	rfoot_step_y_index = find_peaks(rfoot_data_ymax, prominence=0.1)[0]
 	lfoot_step_x, lfoot_step_y = get_step(lfoot_data_top_x, lfoot_data_ymax, lfoot_step_y_index)
@@ -215,68 +172,30 @@ def main():
 		foot_step_y_up = []
 		
 		for cnt, (i1, i2) in enumerate(zip(max_index, min_index)):
-			if i1 - i2 < 1 and cnt != 0:
-				foot_step_x_up.append(foot_data_x[min_index[cnt - 1]:i1+1])
-				foot_step_y_up.append(foot_data_y[min_index[cnt - 1]:i1+1])
-			elif i1 - i2 < 1:
-				continue
-			else:
-				foot_step_x_up.append(foot_data_x[i2:i1+1])
-				foot_step_y_up.append(foot_data_y[i2:i1+1])
+		#	if i1 - i2 < 1 and cnt != 0:
+		#		foot_step_x_up.append(foot_data_x[min_index[cnt - 1]:i1+1])
+		#		foot_step_y_up.append(foot_data_y[min_index[cnt - 1]:i1+1])
+		#	elif i1 - i2 < 1:
+		#		continue
+		#	else:
+		#		foot_step_x_up.append(foot_data_x[i2:i1+1])
+		#		foot_step_y_up.append(foot_data_y[i2:i1+1])
+			foot_step_x_up.append([foot_data_x[i1]])
+			foot_step_y_up.append([foot_data_y[i1]])
 		return foot_step_x_up, foot_step_y_up
 
 	lfoot_step_x_up, lfoot_step_y_up = step_up(lfoot_step_y_index, lfoot_step_y_index_negative, lfoot_data_top_x, lfoot_data_ymax)
 	rfoot_step_x_up, rfoot_step_y_up = step_up(rfoot_step_y_index, rfoot_step_y_index_negative, rfoot_data_top_x, rfoot_data_ymax)
 
 
-#	def _get_track(foot_data_top_x, foot_data_ymax, foot_step_x, foot_step_y, foot_step_y_min):
-#		x_track = []
-#		y_track = []
-#		x_step_dat = []
-#		y_step_dat = []
-#		f_cnt = 0
-#		add = 0
-#		last_y = 0
-#		#status = ''
-#		for cnt, (x, y) in enumerate(zip(foot_data_top_x, foot_data_ymax)):
-#			add = 0
-#			if y <= foot_step_y[f_cnt]:
-#				#last_y = y
-#				#if status == '':
-#				#	status = 'ns'
-#				if f_cnt == 0:
-#					x_track.append(x)
-#					y_track.append(y)
-#				else:#elif (y - foot_step_y_min[f_cnt]) + add > y_track[-1]:
-#					#for j in range(0, f_cnt):
-#					#	add += foot_step_y[j] - foot_step_y_min[j]
-#					x_track.append(x)
-#					y_track.append((y - foot_step_y_min[f_cnt]) + add)
-#					if y == foot_step_y[f_cnt] and x == foot_step_x[f_cnt]:
-#						x_step_dat.append(x)
-#						y_step_dat.append(y + add)
-#				if y == foot_step_y[f_cnt] and x == foot_step_x[f_cnt]:
-#					f_cnt += 1
-#					#add += last_y
-#				if f_cnt >= len(foot_step_y):
-#					break
-#				#if status == 'ns':
-#				#	status = ''
-#				#	add += last_y
-#	#print(lf_y_track)
-#		return [x_track, y_track], [x_step_dat, y_step_dat] 
-
-	#lf_track, lf_step_dat = get_track(lfoot_data_top_x, lfoot_data_ymax, lfoot_step_x, lfoot_step_y, lfoot_step_y_min)
-	#rf_track, rf_step_dat = get_track(rfoot_data_top_x, rfoot_data_ymax, rfoot_step_x, rfoot_step_y, rfoot_step_y_min)
-
-
-	def get_track(foot_step_x_up, foot_step_y_up):
+	def get_track(foot_step_x_up, foot_step_y_up, move):
+	# must fix this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	# return x, y track and step dat
 		x_track = []
 		y_track = []
 		x_step_dat = []
 		y_step_dat = []
-		y_add = 0
+		y_add = move
 		for cnt, (x_up, y_up) in enumerate(zip(foot_step_x_up, foot_step_y_up)):
 			for cnt2, (x, y) in enumerate(zip(x_up, y_up)):
 				x_track.append(x)
@@ -288,50 +207,14 @@ def main():
 
 		return [x_track, y_track], [x_step_dat, y_step_dat]
 
-	lf_track, lf_step_dat = get_track(lfoot_step_x_up, lfoot_step_y_up)
-	rf_track, rf_step_dat = get_track(rfoot_step_x_up, rfoot_step_y_up)
-
-	print(lf_track)
-	print(rf_track)
+	lmove = (lfoot_data_ymax[lfoot_step_y_index[0]] - rfoot_data_ymax[rfoot_step_y_index[0]])# * 2
 
 
-#	def clean_same_data(track, step_dat):
-#		x_track = track[0]
-#		y_track = track[1]
-#		x_step_dat = step_dat[0]
-#		y_step_dat = step_dat[1]
-#		new_x_track = []
-#		new_y_track = []
-#		new_x_step_dat = []
-#		new_y_step_dat = []
-#		for cnt, (x, y) in enumerate(zip(x_track, y_track)):
-#			if cnt == 0:
-#				continue
-#			two_dat_dis = math.sqrt(pow(x - x_track[cnt - 1], 2) + pow(y - y_track[cnt - 1], 2))
-#			if two_dat_dis > 0.1:
-#				new_x_track.append(x)
-#				new_y_track.append(y)
-#		
-#		for_dat = []
-#		for x, y in zip(new_x_track, new_y_track):
-#			for_dat.append([x, y])
-#		for xs, ys in zip(x_step_dat, y_step_dat):
-#			box = []
-#			if [xs, ys] not in for_dat:
-#				for x, y in zip(new_x_track, new_y_track):
-#					box.append(math.sqrt(pow(xs - x,2) + pow(ys - y,2)))
-#				index = box.index(min(box))
-#				new_x_step_dat.append(new_x_track[index])
-#				new_y_step_dat.append(new_y_track[index])
-#			else:
-#				new_x_step_dat.append(xs)
-#				new_y_step_dat.append(ys)
-#
-#		return [new_x_track, new_y_track], [new_x_step_dat, new_y_step_dat]
-	
-	#lf_track, lf_step_dat = clean_same_data(lf_track, lf_step_dat)
-	#rf_track, rf_step_dat = clean_same_data(rf_track, rf_step_dat)
+	lf_track, lf_step_dat = get_track(lfoot_step_x_up, lfoot_step_y_up, lmove)
+	rf_track, rf_step_dat = get_track(rfoot_step_x_up, rfoot_step_y_up, 0)
 
+	#print(lf_track)
+	#print(rf_track)
 
 
 	lf_distance_cm = []
@@ -381,39 +264,6 @@ def main():
 		y_ticks.append(str(((y_cnt//0.45)*40)/100) + ' M')
 		y_cnt = y_cnt + 1
 
-	### I don't know what's it.
-	#x_ticks = []
-	#x_box = []
-	#x_cnt = 0
-	#while x_cnt <= draw_xmax:
-	#	x_ticks.insert(0, str(((x_cnt//0.45)*40)/100) + ' M')
-	#	x_cnt = x_cnt + 1
-	#print(draw_xmax)
-	#print(x_ticks)
-
-	avg_size = 1
-	lf_x_track_avg = x_track_avg(lf_track[0], avg_size)
-	rf_x_track_avg = x_track_avg(rf_track[0], avg_size)
-	plt.style.use('bmh')
-	fig = plt.figure(figsize=(5,10))
-	plt.axes()
-	plt.xlim(1, 0)
-	#plt.ylim(0, draw_ymax)
-	#plt.xticks(range(len(x_ticks)), x_ticks)#, minor=True, rotation=0)
-	plt.xticks(range(2), [(str(((1//0.45)*40)/100)) + ' M', '0 M'])#, minor=True, rotation=0)
-	plt.yticks(range(len(y_ticks)), y_ticks)#, minor=True)
-	#plt.yticks(range(1), ['0,0'], rotation=0)
-	plt.title('Feet track')
-	plt.plot(lf_x_track_avg[:], lf_track[1][avg_size-1:], ':b')#, label='Left foot')
-	plt.plot(rf_x_track_avg[:], rf_track[1][avg_size-1:], ':r')#, label='Right foot')
-	plt.plot(lf_step_dat[0], lf_step_dat[1], 'ob', label='Left foot')
-	plt.plot(rf_step_dat[0], rf_step_dat[1], 'or', label='Reft foot')
-	plt.legend(loc = 'lower left')
-	#plt.grid(color='r', linestyle='-', linewidth=0.2)
-	#plt.grid(which='minor', alpha=0.2)
-	#plt.tight_layout()
-	plt.savefig('./track.png', dpi=400)
-
 
 	lf_cm_y = []
 	for i in range(1, len(lfoot_data_ymax) + 1):
@@ -423,17 +273,67 @@ def main():
 		rf_cm_y.append(i)
 
 
+	avg_size = 1
+	lf_x_track_avg = x_track_avg(lf_track[0], avg_size)
+	rf_x_track_avg = x_track_avg(rf_track[0], avg_size)
+	plt.style.use('bmh')
+	fig = plt.figure(figsize=(5,20))
+	plt.axes()
+	plt.xlim(1, 0)
+	#plt.ylim(0, draw_ymax)
+	#plt.xticks(range(len(x_ticks)), x_ticks)#, minor=True, rotation=0)
+	plt.xticks(range(2), [(str(((1//0.45)*40)/100)) + ' M', '0 M'])#, minor=True, rotation=0)
+	plt.yticks(range(len(y_ticks)), y_ticks)#, minor=True)
+	#plt.yticks(range(1), ['0,0'], rotation=0)
+	plt.title('Feet track')
+	plt.plot(lf_x_track_avg[:], lf_track[1][avg_size-1:], ':g')#, label='Left foot')
+	plt.plot(rf_x_track_avg[:], rf_track[1][avg_size-1:], ':r')#, label='Right foot')
+	plt.plot(lf_step_dat[0], lf_step_dat[1], 'og', label='Left foot')
+	plt.plot(rf_step_dat[0], rf_step_dat[1], 'or', label='Reft foot')
+	plt.legend(loc = 'lower left')
+	#plt.grid(color='r', linestyle='-', linewidth=0.2)
+	#plt.grid(which='minor', alpha=0.2)
+	#plt.tight_layout()
+	plt.savefig('./track.png', dpi=400)
+
+
+
 	fig4 = plt.figure(figsize=(20,5))
 	ax2 = fig4.add_subplot(1, 1, 1)
 	ax2.set_title('Feet step size scatter plot')
 	#plt.xticks(range(1), '')
 	#plt.yticks(range(1), '')
-	plt.plot(lf_cm_y, lfoot_data_ymax, label='Left foot')
-	plt.plot(rf_cm_y, rfoot_data_ymax, label='Right foot')
+	plt.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
+	plt.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
 	ax2.set_ylabel('Y')
 	ax2.set_xlabel('Time')
 	ax2.legend(['Left foot', 'Right foot'], loc='upper left')
 	plt.savefig('./step_size_scatter_plot.png')
+
+
+	# feet moving gif
+	fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
+	fig_gif.set_tight_layout(True)
+	#ax_gif = fig_gif.add_subplot(1, 1, 1)
+	lf_gif, = plt.plot([], [], 'go', label='Left foot')
+	rf_gif, = plt.plot([], [], 'ro', label='Reft foot')
+
+	def init():  
+		ax_gif.set_xlim(1, 0)  
+		ax_gif.set_ylim(0, 1)  
+		ax_gif.legend(['Left foot', 'Right foot'], loc=4)
+
+	def update(i):
+		fl = i
+		lf_gif.set_data(lfoot_data_top_x[fl], lfoot_data_ymax[fl])  
+		rf_gif.set_data(rfoot_data_top_x[fl], rfoot_data_ymax[fl])  
+		return lf_gif, rf_gif
+
+	ani = FuncAnimation(fig_gif, update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=init)
+
+	# save animation at 25 frames per second 
+	#writer = PillowWriter(fps=25)  
+	ani.save("feet_tracking.gif", writer='imagemagick', fps=10)  
 
 
 	print("done.")
