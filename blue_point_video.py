@@ -318,21 +318,20 @@ def main():
 	lf_gif, = plt.plot([], [], 'go', label='Left foot')
 	rf_gif, = plt.plot([], [], 'ro', label='Reft foot')
 
-	def init():  
+	def gif_init():  
 		ax_gif.set_xlim(1, 0)  
 		ax_gif.set_ylim(0, 1)  
 		ax_gif.legend(['Left foot', 'Right foot'], loc=4)
 
-	def update(i):
+	def gif_update(i):
 		fl = i
 		lf_gif.set_data(lfoot_data_top_x[fl], lfoot_data_ymax[fl])  
 		rf_gif.set_data(rfoot_data_top_x[fl], rfoot_data_ymax[fl])  
 		return lf_gif, rf_gif
 
-	ani = FuncAnimation(fig_gif, update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=init)
+	ani = FuncAnimation(fig_gif, gif_update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=gif_init)
 
-	# save animation at 25 frames per second 
-	#writer = PillowWriter(fps=25)  
+	# save animation at 10 frames per second 
 	ani.save("feet_tracking.gif", writer='imagemagick', fps=10)  
 
 
