@@ -31,6 +31,7 @@ def restart_cap():
 def main():
 	# main
 	print('>>============================================================================<<')
+	print("Getting data...")
 	detection_model = run.load_model(config.MODEL_NAME)
 	if captype == 'video':
 		video_cap = cv2.VideoCapture(config.TEST_VIDEO_PATH)
@@ -102,7 +103,9 @@ def main():
 	if config.MODEL_NAME != 'blue_point':
 		print('done.')
 		return 0
+	print("ok")
 	
+	print("Data calculating...")
 	lfoot_data_xmax = []
 	lfoot_data_ymax = []
 	lfoot_data_xmin = []
@@ -271,8 +274,9 @@ def main():
 	rf_cm_y = []
 	for i in range(1, len(rfoot_data_ymax) + 1):
 		rf_cm_y.append(i)
+	print("ok")
 
-
+	print("Drawing data to images...")
 	avg_size = 1
 	lf_x_track_avg = x_track_avg(lf_track[0], avg_size)
 	rf_x_track_avg = x_track_avg(rf_track[0], avg_size)
@@ -309,31 +313,48 @@ def main():
 	ax2.set_xlabel('Time')
 	ax2.legend(['Left foot', 'Right foot'], loc='upper left')
 	plt.savefig('./step_size_scatter_plot.png')
+	print("ok")
 
-
+	print("Creating animation...")
 	# feet moving gif
-	fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
-	fig_gif.set_tight_layout(True)
-	#ax_gif = fig_gif.add_subplot(1, 1, 1)
+	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
+	fig_gif = plt.figure(figsize=(16, 4), dpi=100)
+	#fig_gif.set_tight_layout(True)
+	ax_gif = fig_gif.add_subplot(1, 20, (1, 5))
 	lf_gif, = plt.plot([], [], 'go', label='Left foot')
 	rf_gif, = plt.plot([], [], 'ro', label='Reft foot')
 
+	ax_gif2 = fig_gif.add_subplot(1, 20, (7,20))
+	lf_gif2 = plt.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
+	rf_gif2 = plt.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
+	time_gif2, = plt.plot([], [], 'b-', label='Time')
+	#fig_gif.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
+	#fig_gif.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
+	
 	def gif_init():  
 		ax_gif.set_xlim(1, 0)  
 		ax_gif.set_ylim(0, 1)  
+		ax_gif.set_ylabel('Y')
+		ax_gif.set_xlabel('X')
 		ax_gif.legend(['Left foot', 'Right foot'], loc=4)
+		
+		ax_gif2.set_ylabel('Y')
+		ax_gif2.set_xlabel('Time')
+		ax_gif2.legend(['Left foot','Right foot','Time'], loc=4)
 
 	def gif_update(i):
 		fl = i
 		lf_gif.set_data(lfoot_data_top_x[fl], lfoot_data_ymax[fl])  
 		rf_gif.set_data(rfoot_data_top_x[fl], rfoot_data_ymax[fl])  
-		return lf_gif, rf_gif
+		time_gif2.set_data([fl, fl], [0, 1])  
 
-	ani = FuncAnimation(fig_gif, gif_update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=gif_init)
+		return lf_gif, rf_gif, time_gif2
+
+	ani = FuncAnimation(fig_gif, gif_update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=gif_init)#, blit=True)
 
 	# save animation at 10 frames per second 
 	ani.save("feet_tracking.gif", writer='imagemagick', fps=10)  
-
+	print("ok")
 
 	print("done.")
 
