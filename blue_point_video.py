@@ -318,13 +318,13 @@ def main():
 	print("Creating animation...")
 	# feet moving gif
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
-	fig_gif = plt.figure(figsize=(16, 4), dpi=100)
+	fig_gif = plt.figure(figsize=(8, 10), dpi=100)
 	#fig_gif.set_tight_layout(True)
-	ax_gif = fig_gif.add_subplot(1, 20, (1, 5))
+	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))
 	lf_gif, = plt.plot([], [], 'go', label='Left foot')
 	rf_gif, = plt.plot([], [], 'ro', label='Reft foot')
 
-	ax_gif2 = fig_gif.add_subplot(1, 20, (7,20))
+	ax_gif2 = fig_gif.add_subplot(8, 1, (7, 8))
 	lf_gif2 = plt.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
 	rf_gif2 = plt.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
 	time_gif2, = plt.plot([], [], 'b-', label='Time')
@@ -352,8 +352,8 @@ def main():
 
 	ani = FuncAnimation(fig_gif, gif_update, frames=np.arange(0, len(lfoot_data_top_x)), init_func=gif_init)#, blit=True)
 
-	# save animation at 10 frames per second 
-	ani.save("feet_tracking.gif", writer='imagemagick', fps=10)  
+	# save animation at 7 frames per second 
+	ani.save("feet_tracking.gif", writer='imagemagick', fps=7)  
 	print("ok")
 
 	print("done.")
