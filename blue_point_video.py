@@ -340,7 +340,7 @@ def main():
 		
 		ax_gif2.set_ylabel('Y')
 		ax_gif2.set_xlabel('Time')
-		ax_gif2.legend(['Left foot','Right foot','Time'], loc=4)
+		ax_gif2.legend(['Left foot','Right foot'], loc=4)
 
 	def gif_update(i):
 		fl = i
