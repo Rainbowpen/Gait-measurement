@@ -318,8 +318,10 @@ def main():
 	print("Creating animation...")
 	# feet moving gif
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
+	#plt.subplots_adjust(left=0, right=0.1, top=0.5, bottom=0)
 	fig_gif = plt.figure(figsize=(8, 10), dpi=100)
 	#fig_gif.set_tight_layout(True)
+	#plt.title('Data visualization')
 	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))
 	lf_gif, = plt.plot([], [], 'go', label='Left foot')
 	rf_gif, = plt.plot([], [], 'ro', label='Reft foot')
@@ -328,24 +330,24 @@ def main():
 	lf_gif2 = plt.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
 	rf_gif2 = plt.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
 	time_gif2, = plt.plot([], [], 'b-', label='Time')
-	#fig_gif.plot(lf_cm_y, lfoot_data_ymax, 'g', label='Left foot')
-	#fig_gif.plot(rf_cm_y, rfoot_data_ymax, 'r', label='Right foot')
 	
+
 	def gif_init():  
-		ax_gif.set_xlim(1, 0)  
+		ax_gif.set_xlim(0, 1)  
 		ax_gif.set_ylim(0, 1)  
 		ax_gif.set_ylabel('Y')
 		ax_gif.set_xlabel('X')
 		ax_gif.legend(['Left foot', 'Right foot'], loc=4)
 		
 		ax_gif2.set_ylabel('Y')
-		ax_gif2.set_xlabel('Time')
+		ax_gif2.set_xlabel('Number of data')
 		ax_gif2.legend(['Left foot','Right foot'], loc=4)
+
 
 	def gif_update(i):
 		fl = i
-		lf_gif.set_data(lfoot_data_top_x[fl], lfoot_data_ymax[fl])  
-		rf_gif.set_data(rfoot_data_top_x[fl], rfoot_data_ymax[fl])  
+		lf_gif.set_data(1 - lfoot_data_top_x[fl], lfoot_data_ymax[fl])  
+		rf_gif.set_data(1 - rfoot_data_top_x[fl], rfoot_data_ymax[fl])  
 		time_gif2.set_data([fl, fl], [0, 1])  
 
 		return lf_gif, rf_gif, time_gif2
