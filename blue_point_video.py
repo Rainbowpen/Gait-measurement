@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 from scipy.signal import find_peaks
 
+
 captype = 'video' # camera, video or stream
 
 def restart_cap():
@@ -98,7 +99,6 @@ def main():
 #			break
 
 	if captype == 'video' or captype == 'camera':
-		#print(len(image_array))
 		new_image_array = run.write_text_to_image(image_array)
 		#print(type(new_image_array))
 		#print(len(new_image_array))
@@ -344,7 +344,7 @@ def main():
 	# feet moving gif
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
 	#plt.subplots_adjust(left=0, right=0.1, top=0.5, bottom=0)
-	fig_gif = plt.figure(figsize=(8, 10), dpi=100)
+	fig_gif = plt.figure(figsize=(8, 10), dpi=50)
 	#fig_gif.set_tight_layout(True)
 	#plt.title('Data visualization')
 	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))

@@ -12,4 +12,4 @@ __pycache__/
 tensorflow/
 test_video/
 tf_detection_model_zoo/
-
+*.zip
