@@ -100,8 +100,6 @@ def main():
 
 	if captype == 'video' or captype == 'camera':
 		new_image_array = run.write_text_to_image(image_array)
-		#print(type(new_image_array))
-		#print(len(new_image_array))
 		run.write_to_video(config.VIDEO_SAVE_PATH, new_image_array, size)
 
 	if config.MODEL_NAME != 'blue_point':
@@ -203,11 +201,8 @@ def main():
 		x_step_dat = []
 		y_step_dat = []
 		y_add = move
-<<<<<<< HEAD
 		#y_add = 0
 		speed = 0.08
-=======
->>>>>>> 2fc26aed1467cdbcdd6017ea9da5e16389daec13
 		for cnt, (x_up, y_up) in enumerate(zip(foot_step_x_up, foot_step_y_up)):
 			for cnt2, (x, y) in enumerate(zip(x_up, y_up)):
 				x_track.append(x)
@@ -221,21 +216,11 @@ def main():
 		return [x_track, y_track], [x_step_dat, y_step_dat]
 
 	lmove = (lfoot_data_ymax[lfoot_step_y_index[0]] - rfoot_data_ymax[rfoot_step_y_index[0]])# * 2
-<<<<<<< HEAD
 	print("debug: lmove is " + str(lmove))
 
 	lf_track, lf_step_dat = get_track(lfoot_step_x_up, lfoot_step_y_up, lmove)
 	rf_track, rf_step_dat = get_track(rfoot_step_x_up, rfoot_step_y_up, 0)
 
-=======
-
-
-	lf_track, lf_step_dat = get_track(lfoot_step_x_up, lfoot_step_y_up, lmove)
-	rf_track, rf_step_dat = get_track(rfoot_step_x_up, rfoot_step_y_up, 0)
-
->>>>>>> 2fc26aed1467cdbcdd6017ea9da5e16389daec13
-	#print(lf_track)
-	#print(rf_track)
 
 
 	lf_distance_cm = []
@@ -336,10 +321,6 @@ def main():
 	plt.savefig('./track2.png', dpi=400)
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 2fc26aed1467cdbcdd6017ea9da5e16389daec13
 
 	fig4 = plt.figure(figsize=(20,5))
 	ax2 = fig4.add_subplot(1, 1, 1)
@@ -358,11 +339,7 @@ def main():
 	# feet moving gif
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
 	#plt.subplots_adjust(left=0, right=0.1, top=0.5, bottom=0)
-<<<<<<< HEAD
 	fig_gif = plt.figure(figsize=(8, 10), dpi=50)
-=======
-	fig_gif = plt.figure(figsize=(8, 10), dpi=100)
->>>>>>> 2fc26aed1467cdbcdd6017ea9da5e16389daec13
 	#fig_gif.set_tight_layout(True)
 	#plt.title('Data visualization')
 	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))
