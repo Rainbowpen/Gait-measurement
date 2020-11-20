@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 from scipy.signal import find_peaks
 
+
 captype = 'video' # camera, video or stream
 
 def restart_cap():
@@ -98,7 +99,8 @@ def main():
 #			break
 
 	if captype == 'video' or captype == 'camera':
-		run.write_to_video(config.VIDEO_SAVE_PATH, image_array, size)
+		new_image_array = run.write_text_to_image(image_array)
+		run.write_to_video(config.VIDEO_SAVE_PATH, new_image_array, size)
 
 	if config.MODEL_NAME != 'blue_point':
 		print('done.')
@@ -199,6 +201,8 @@ def main():
 		x_step_dat = []
 		y_step_dat = []
 		y_add = move
+		#y_add = 0
+		speed = 0.08
 		for cnt, (x_up, y_up) in enumerate(zip(foot_step_x_up, foot_step_y_up)):
 			for cnt2, (x, y) in enumerate(zip(x_up, y_up)):
 				x_track.append(x)
@@ -206,18 +210,17 @@ def main():
 				if cnt2 + 1 == len(x_up):
 					x_step_dat.append(x)
 					y_step_dat.append((y - y_up[0]) + y_add)
-					y_add += y_up[-1]
+					#y_add += y_up[-1]
+					y_add += speed
 
 		return [x_track, y_track], [x_step_dat, y_step_dat]
 
 	lmove = (lfoot_data_ymax[lfoot_step_y_index[0]] - rfoot_data_ymax[rfoot_step_y_index[0]])# * 2
-
+	print("debug: lmove is " + str(lmove))
 
 	lf_track, lf_step_dat = get_track(lfoot_step_x_up, lfoot_step_y_up, lmove)
 	rf_track, rf_step_dat = get_track(rfoot_step_x_up, rfoot_step_y_up, 0)
 
-	#print(lf_track)
-	#print(rf_track)
 
 
 	lf_distance_cm = []
@@ -300,6 +303,23 @@ def main():
 	#plt.tight_layout()
 	plt.savefig('./track.png', dpi=400)
 
+	# track 2
+	fig = plt.figure(figsize=(5,20))
+	plt.axes()
+	plt.xlim(1, 0)
+	#plt.ylim(0, draw_ymax)
+	#plt.xticks(range(len(x_ticks)), x_ticks)#, minor=True, rotation=0)
+	plt.xticks(range(2), [(str(((1//0.45)*40)/100)) + ' M', '0 M'])#, minor=True, rotation=0)
+	plt.yticks(range(len(y_ticks)), y_ticks)#, minor=True)
+	#plt.yticks(range(1), ['0,0'], rotation=0)
+	plt.title('Feet track')
+	plt.plot(lf_x_track_avg[:], lf_track[1][avg_size-1:], ':g')#, label='Left foot')
+	plt.plot(rf_x_track_avg[:], rf_track[1][avg_size-1:], ':r')#, label='Right foot')
+	plt.plot(lf_step_dat[0], lf_step_dat[1], 'og', label='Left foot')
+	plt.plot(rf_step_dat[0], rf_step_dat[1], 'or', label='Reft foot')
+	plt.legend(loc = 'lower left')
+	plt.savefig('./track2.png', dpi=400)
+
 
 
 	fig4 = plt.figure(figsize=(20,5))
@@ -319,7 +339,7 @@ def main():
 	# feet moving gif
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
 	#plt.subplots_adjust(left=0, right=0.1, top=0.5, bottom=0)
-	fig_gif = plt.figure(figsize=(8, 10), dpi=100)
+	fig_gif = plt.figure(figsize=(8, 10), dpi=50)
 	#fig_gif.set_tight_layout(True)
 	#plt.title('Data visualization')
 	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))

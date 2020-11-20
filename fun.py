@@ -10,6 +10,7 @@ import zipfile
 import pathlib
 import cv2
 import threading
+from memory_profiler import profile
 
 from collections import defaultdict
 from io import StringIO
@@ -34,7 +35,7 @@ class config:
 
 	#PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/models/research/object_detection/data/mscoco_label_map.pbtxt''
 	PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/my_label_map.pbtxt'
-	VIDEO_NUMBER = '19'
+	VIDEO_NUMBER = '14'
 	TEST_VIDEO_PATH = './test_video/foot_' + VIDEO_NUMBER + '.mp4'
 	CAMERA = 0
 	URL = 'http://localhost:8081'
@@ -185,6 +186,40 @@ class run:
 		iou = interArea / float(boxAArea + boxBArea - interArea)
 		# return the intersection over union value
 		return iou
+
+
+	@profile
+	def write_text_to_image(image_array):
+		# image_array is array of image and this funtion will
+		# write text on it.
+
+		from sys import getsizeof
+		import gc
+		from PIL import Image, ImageDraw, ImageFont
+
+		for i in range(len(image_array)):
+			new_image = np.array(image_array[i], dtype=np.uint8)
+			new_image = Image.fromarray(new_image)
+			draw = ImageDraw.Draw(new_image)
+			#font = ImageFont.truetype(size=20)
+			draw.text((10,10), "Frame number: " + str(i), fill=(0, 0, 0))
+			draw.text((10,25), "Walking pace: " + str(i) + " (m/s)", fill=(0, 0, 0))
+			draw.text((10,40), "Step width: " + str(i) + " (cm)", fill=(0, 0, 0))
+			draw.text((10,55), "Stride Length: ", fill=(0, 0, 0))
+			draw.text((25,70), "Left: " + str(i) + " (cm)", fill=(0, 0, 0))
+			draw.text((25,85), "Right: " + str(i) + " (cm)", fill=(0, 0, 0))
+
+
+			new_image_array = np.frombuffer(new_image.tobytes(), dtype=np.uint8)
+			new_image = new_image_array.reshape((new_image.size[1], new_image.size[0], 3))
+			image_array[i] = new_image 
+
+			del new_image, draw, new_image_array
+			if i%10 == 0:
+				gc.collect()
+			print(i)
+
+		return image_array
 
 
 	def write_to_video(path, image_array, size):
