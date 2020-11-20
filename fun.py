@@ -35,7 +35,11 @@ class config:
 
 	#PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/models/research/object_detection/data/mscoco_label_map.pbtxt''
 	PATH_TO_LABELS = '/home/simon/Documents/project/blue_point/my_label_map.pbtxt'
+<<<<<<< HEAD
 	VIDEO_NUMBER = '14'
+=======
+	VIDEO_NUMBER = '19'
+>>>>>>> 2fc26aed1467cdbcdd6017ea9da5e16389daec13
 	TEST_VIDEO_PATH = './test_video/foot_' + VIDEO_NUMBER + '.mp4'
 	CAMERA = 0
 	URL = 'http://localhost:8081'
