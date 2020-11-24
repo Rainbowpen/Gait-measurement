@@ -10,7 +10,8 @@ import zipfile
 import pathlib
 import cv2
 import threading
-from memory_profiler import profile
+from scipy.signal import find_peaks
+#from memory_profiler import profile
 
 from collections import defaultdict
 from io import StringIO
@@ -188,8 +189,8 @@ class run:
 		return iou
 
 
-	@profile
-	def write_text_to_image(image_array):
+	#@profile # for memory monitor
+	def write_text_to_image(image_array, walking_pace, step_width, left, right):
 		# image_array is array of image and this funtion will
 		# write text on it.
 
@@ -203,21 +204,20 @@ class run:
 			draw = ImageDraw.Draw(new_image)
 			#font = ImageFont.truetype(size=20)
 			draw.text((10,10), "Frame number: " + str(i), fill=(0, 0, 0))
-			draw.text((10,25), "Walking pace: " + str(i) + " (m/s)", fill=(0, 0, 0))
-			draw.text((10,40), "Step width: " + str(i) + " (cm)", fill=(0, 0, 0))
+			draw.text((10,25), "Walking pace: " + str(walking_pace[i]) + " (m/s)", fill=(0, 0, 0))
+			draw.text((10,40), "Step width: " + str(step_width[i]) + " (cm)", fill=(0, 0, 0))
 			draw.text((10,55), "Stride Length: ", fill=(0, 0, 0))
-			draw.text((25,70), "Left: " + str(i) + " (cm)", fill=(0, 0, 0))
-			draw.text((25,85), "Right: " + str(i) + " (cm)", fill=(0, 0, 0))
-
+			draw.text((25,70), "Left: " + str(left[i]) + " (cm)", fill=(0, 0, 0))
+			draw.text((25,85), "Right: " + str(right[i]) + " (cm)", fill=(0, 0, 0))
 
 			new_image_array = np.frombuffer(new_image.tobytes(), dtype=np.uint8)
 			new_image = new_image_array.reshape((new_image.size[1], new_image.size[0], 3))
 			image_array[i] = new_image 
 
-			del new_image, draw, new_image_array
-			if i%10 == 0:
-				gc.collect()
-			print(i)
+			#del new_image, draw, new_image_array
+			#if i%10 == 0:
+			#	gc.collect()
+			#print(i)
 
 		return image_array
 
@@ -261,3 +261,223 @@ class ipcamCapture:
             self.status, self.Frame = self.capture.read()
         
         self.capture.release()
+
+
+class Feet:
+	# feet's thing
+
+	def __init__(self, lfoot_data, rfoot_data):
+		self.lfoot_data = lfoot_data
+		self.rfoot_data = rfoot_data
+		self.lfoot_data_xmax = []
+		self.lfoot_data_ymax = []
+		self.lfoot_data_xmin = []
+		self.lfoot_data_ymin = []
+		self.lfoot_data_top_x = []
+	
+		self.rfoot_data_xmax = []
+		self.rfoot_data_ymax = []
+		self.rfoot_data_xmin = []
+		self.rfoot_data_ymin = []
+		self.rfoot_data_top_x = []
+
+		self.feet_distance = []
+
+		self.update()
+
+
+	def get_data_to_var(self):
+
+		for lf, rf in zip(self.lfoot_data, self.rfoot_data):
+			self.lfoot_data_xmax.append(lf[2])
+			self.lfoot_data_ymax.append(lf[3])
+			self.lfoot_data_xmin.append(lf[0])
+			self.lfoot_data_ymin.append(lf[1])
+			
+			self.rfoot_data_xmax.append(rf[2])
+			self.rfoot_data_ymax.append(rf[3])
+			self.rfoot_data_xmin.append(rf[0])
+			self.rfoot_data_ymin.append(rf[1])
+			if lf[2] is not None:
+				self.lfoot_data_top_x.append((lf[2] - lf[0])/2 + lf[0])
+				self.rfoot_data_top_x.append((rf[2] - rf[0])/2 + rf[0])
+				self.feet_distance.append(abs(lf[3] - rf[3]))
+			else:
+				self.lfoot_data_top_x.append(None)
+				self.rfoot_data_top_x.append(None)
+				self.feet_distance.append(None)
+	
+	
+		lfoot_data_ymax_np = np.array(self.lfoot_data_ymax, dtype=np.float64)	
+		self.lfoot_max = np.nanmax(lfoot_data_ymax_np)
+		self.lfoot_min = np.nanmin(lfoot_data_ymax_np)
+		
+
+
+
+	def update(self):
+		# Feet class main
+
+		self.get_data_to_var()
+		rfoot_data_ymax_np = np.array(self.rfoot_data_ymax, dtype=np.float64)	
+		self.rfoot_max = np.nanmax(rfoot_data_ymax_np)
+		self.rfoot_min = np.nanmin(rfoot_data_ymax_np)
+		
+		self.lfoot_avg = (self.lfoot_max - self.lfoot_min)/2 + self.lfoot_min
+		self.rfoot_avg = (self.rfoot_max - self.rfoot_min)/2 + self.rfoot_min
+
+		self.convert_and_get_step()
+		self.lfoot_step_x_up, self.lfoot_step_y_up = self.step_up(self.lfoot_step_y_index,
+													self.lfoot_step_y_index_negative, 
+													self.lfoot_data_top_x, 
+													self.lfoot_data_ymax)
+		self.rfoot_step_x_up, self.rfoot_step_y_up = self.step_up(self.rfoot_step_y_index,
+													self.rfoot_step_y_index_negative, 
+													self.rfoot_data_top_x, 
+													self.rfoot_data_ymax)
+		
+		#print(self.get_list_without_none(self.lfoot_data_ymax)[self.lfoot_step_y_index[0]])
+		#print(self.lfoot_step_y_index)
+		self.lmove = (self.get_list_without_none(self.lfoot_data_ymax)[self.lfoot_step_y_index[0]] - self.get_list_without_none(self.rfoot_data_ymax)[self.rfoot_step_y_index[0]])
+		#print("debug: lmove is " + str(self.lmove))
+
+		self.lf_track, self.lf_step_dat = self.get_track(self.lfoot_step_x_up, 
+												self.lfoot_step_y_up, self.lmove)
+		self.rf_track, self.rf_step_dat = self.get_track(self.rfoot_step_x_up, 
+												self.rfoot_step_y_up, 0)
+
+
+		self.draw_ymax = max(self.get_list_without_none(self.lf_track[1])[-1], self.get_list_without_none(self.rf_track[1])[-1])
+		self.draw_xmax = max(self.get_list_without_none(self.lf_track[0])[-1], self.get_list_without_none(self.rf_track[0])[-1])
+
+
+
+
+	def get_list_without_none(self, none_list):
+		# return list but without None.
+		return [i for i in none_list if i] 
+
+
+	def get_list_index_without_none(self, none_list):
+		# return list index but without None index.
+		not_none_index = []
+		for cnt, i in enumerate(none_list):
+			if i is not None:
+				not_none_index.append(cnt)
+
+		#print("not_none_index: " + str(not_none_index))
+		return not_none_index
+
+
+	def convert_list_to_negative(self, data):
+		new_data = []
+		for i in data:
+			if i is not None:
+				new_data.append(0 - i)
+			else:
+				new_data.append(None)
+		return new_data
+
+
+	def get_step(self, x, y, index):
+		foot_step_x = []
+		foot_step_y = []
+		for i in index:
+			foot_step_x.append(x[i])
+			foot_step_y.append(y[i])
+
+		return foot_step_x, foot_step_y
+
+
+	def convert_no_none_list_index_to_real(self, no_none_list_index, source_list):
+		
+		real_list_index = []
+		rl = self.get_list_index_without_none(source_list)
+		for i in no_none_list_index:
+			real_list_index.append(rl[i - 1])
+
+		return real_list_index
+
+
+
+	def convert_and_get_step(self):
+		lfoot_step_y_index_no_none = find_peaks(self.get_list_without_none(self.lfoot_data_ymax), prominence=0.1)[0]
+		self.lfoot_step_y_index = self.convert_no_none_list_index_to_real(lfoot_step_y_index_no_none, self.lfoot_data_ymax)
+
+		rfoot_step_y_index_no_none = find_peaks(self.get_list_without_none(self.rfoot_data_ymax), prominence=0.1)[0]
+		self.rfoot_step_y_index = self.convert_no_none_list_index_to_real(rfoot_step_y_index_no_none, self.rfoot_data_ymax)
+
+		self.lfoot_step_x, self.lfoot_step_y = self.get_step(self.lfoot_data_top_x, self.lfoot_data_ymax, self.lfoot_step_y_index)
+		self.rfoot_step_x, self.rfoot_step_y = self.get_step(self.rfoot_data_top_x, self.rfoot_data_ymax, self.rfoot_step_y_index)
+	
+		self.lfoot_data_ymax_negative = self.convert_list_to_negative(self.lfoot_data_ymax)
+		self.rfoot_data_ymax_negative = self.convert_list_to_negative(self.rfoot_data_ymax)
+		
+		lfoot_step_y_index_negative_no_none = find_peaks(self.get_list_without_none(self.lfoot_data_ymax_negative), prominence=0.1)[0] 
+		self.lfoot_step_y_index_negative = self.convert_no_none_list_index_to_real(lfoot_step_y_index_no_none, self.lfoot_data_ymax_negative)
+		
+		rfoot_step_y_index_negative_no_none = find_peaks(self.get_list_without_none(self.rfoot_data_ymax_negative), prominence=0.1)[0] 
+		self.rfoot_step_y_index_negative = self.convert_no_none_list_index_to_real(rfoot_step_y_index_no_none, self.rfoot_data_ymax_negative)
+		
+		self.lfoot_step_x_min, self.lfoot_step_y_min = self.get_step(self.lfoot_data_top_x, self.lfoot_data_ymax, self.lfoot_step_y_index_negative)
+		self.rfoot_step_x_min, self.rfoot_step_y_min = self.get_step(self.rfoot_data_top_x, self.rfoot_data_ymax, self.rfoot_step_y_index_negative)
+
+	
+	def step_up(self, max_index, min_index, foot_data_x, foot_data_y):
+		# I forget what it is.
+
+		foot_step_x_up = []
+		foot_step_y_up = []
+		for cnt, (i1, i2) in enumerate(zip(max_index, min_index)):
+			foot_step_x_up.append([foot_data_x[i1]])
+			foot_step_y_up.append([foot_data_y[i1]])
+		return foot_step_x_up, foot_step_y_up
+
+
+
+	def get_track(self, foot_step_x_up, foot_step_y_up, move):
+	# must fix this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	# return x, y track and step dat
+		x_track = []
+		y_track = []
+		x_step_dat = []
+		y_step_dat = []
+		y_add = move
+		#y_add = 0
+		speed = 0.08
+		#print(foot_step_x_up)
+		#print(foot_step_y_up)
+		for cnt, (x_up, y_up) in enumerate(zip(foot_step_x_up, foot_step_y_up)):
+			for cnt2, (x, y) in enumerate(zip(x_up, y_up)):
+				if x is not None:	
+					x_track.append(x)
+					y_track.append((y - y_up[0]) + y_add)
+					if cnt2 + 1 == len(x_up):
+						x_step_dat.append(x)
+						y_step_dat.append((y - y_up[0]) + y_add)
+						#y_add += y_up[-1]
+						y_add += speed
+				else:
+					x_track.append(None)
+					y_track.append(None)
+					x_step_dat.append(None)
+					y_step_dat.append(None)
+
+		return [x_track, y_track], [x_step_dat, y_step_dat]
+
+
+	def x_track_avg(self, x, size):
+		x_track = []
+		if size <= 1:
+			return x
+
+		for i in range(size - 1, len(x)):
+			avg = 0 
+			for j in range(i - size, i):
+				avg += x[j]
+			avg = avg / size
+			x_track.append(avg)
+
+		return x_track
+
+
