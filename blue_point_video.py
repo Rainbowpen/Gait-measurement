@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 
 
+
 captype = 'video' # camera, video or stream
 
 def restart_cap():
@@ -118,7 +119,6 @@ def main():
 
 
 
-
 #	lf_distance_cm = []
 #	rf_distance_cm = []
 #	
@@ -194,10 +194,12 @@ def main():
 	plt.yticks(range(len(y_ticks)), y_ticks)#, minor=True)
 	#plt.yticks(range(1), ['0,0'], rotation=0)
 	plt.title('Feet track')
+
 	plt.plot(lf_x_track_avg[:], feet.lf_track[1][avg_size-1:], ':g')#, label='Left foot')
 	plt.plot(rf_x_track_avg[:], feet.rf_track[1][avg_size-1:], ':r')#, label='Right foot')
 	plt.plot(feet.lf_step_dat[0], feet.lf_step_dat[1], 'og', label='Left foot')
 	plt.plot(feet.rf_step_dat[0], feet.rf_step_dat[1], 'or', label='Reft foot')
+
 	plt.legend(loc = 'lower left')
 	plt.savefig('./track2.png', dpi=400)
 
@@ -226,6 +228,7 @@ def main():
 	#fig_gif, ax_gif= plt.subplots()#figsize=(20,20))
 	#plt.subplots_adjust(left=0, right=0.1, top=0.5, bottom=0)
 	fig_gif = plt.figure(figsize=(8, 10), dpi=20)
+
 	#fig_gif.set_tight_layout(True)
 	#plt.title('Data visualization')
 	ax_gif = fig_gif.add_subplot(8, 1, (1, 5))
